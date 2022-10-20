@@ -34,6 +34,28 @@ impl Contract {
     }
 
     // Public - query external greeting
+    pub fn query_greeting_low_level(&self) {
+        // Create a promise to call HelloNEAR.get_greeting()
+        let promise0 = env::promise_create(
+            self.hello_account.clone(),
+            "get_greeting",
+            &[],
+            0,
+            Gas(5 * TGAS),
+        );
+
+        let promise1 = env::promise_then(
+            promise0,
+            env::current_account_id(),
+            "query_greeting_callback",
+            &[],
+            0,
+            Gas(5 * TGAS),
+        );
+        env::promise_return(promise1);
+    }
+
+    // Public - query external greeting
     pub fn query_greeting_complete(&self) -> Promise {
         // Create a promise to call HelloNEAR.get_greeting()
         let promise = hello_near::ext(self.hello_account.clone())
@@ -47,6 +69,18 @@ impl Contract {
                 .query_greeting_callback(),
         );
         promise1
+    }
+
+    // Public method - returns the greeting saved, defaulting to DEFAULT_MESSAGE
+    pub fn can_be_called_as_view(&self) -> String {
+        // env::promise_create(
+        //     self.hello_account.clone(),
+        //     "get_greeting",
+        //     &[],
+        //     0,
+        //     Gas(5 * TGAS),
+        // );
+        return "Sure".to_string();
     }
 
     #[private] // Public - but only callable by env::current_account_id()

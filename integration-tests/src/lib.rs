@@ -49,4 +49,31 @@ mod tests {
         assert_eq!(greet, GREETING1);
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_rewards_can_be_called_as_view() -> anyhow::Result<()> {
+        let context = IntegrationTestContext::new().await?;
+        let greet = context.can_be_called_as_view().await?;
+        assert_eq!(greet, "Sure");
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cross_get_greeting_low_level() -> anyhow::Result<()> {
+        let context = IntegrationTestContext::new().await?;
+        let greet = context.cross_get_greeting_low_level().await?;
+        println!("Cross contract greet = \"{greet}\"");
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_cross_get_greeting_low_level_as_view() {
+        let context = IntegrationTestContext::new().await.unwrap();
+        let greet = context
+            .cross_get_greeting_low_level_as_view()
+            .await
+            .unwrap();
+        println!("Cross contract greet = \"{greet}\"");
+    }
 }

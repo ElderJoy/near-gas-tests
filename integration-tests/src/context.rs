@@ -118,7 +118,6 @@ pub mod tests {
             let res = self
                 .user1
                 .call(self.rewards_contract.id(), "query_greeting")
-                .max_gas()
                 .view()
                 .await;
             println!("{:?}", res);
@@ -136,6 +135,42 @@ pub mod tests {
                 .into_result()?;
             println!("{:?}", res);
             Ok(())
+        }
+
+        pub async fn can_be_called_as_view(&self) -> workspaces::Result<String> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "can_be_called_as_view")
+                .view()
+                .await;
+            println!("{:?}", res);
+            res?.json()
+        }
+
+        pub async fn cross_get_greeting_low_level(&self) -> workspaces::Result<String> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "query_greeting_low_level")
+                .max_gas()
+                .transact()
+                .await?;
+            if res.is_failure() {
+                println!("{:?}", res);
+            }
+            res.json()
+        }
+
+        pub async fn cross_get_greeting_low_level_as_view(&self) -> workspaces::Result<String> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "query_greeting_low_level")
+                .max_gas()
+                .view()
+                .await;
+
+            println!("{:?}", res);
+
+            res?.json()
         }
     }
 }
