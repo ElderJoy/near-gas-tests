@@ -1,15 +1,18 @@
 #[cfg(test)]
 pub mod tests {
     use near_sdk::Timestamp;
+    use near_units::parse_gas;
     use serde_json::json;
-    use workspaces::{network::Sandbox, Contract, Worker};
+    use workspaces::{network::Sandbox, Account, Contract, Worker};
 
     pub(crate) const INITIAL_GREETING: &str = "Initial message";
+    pub(crate) const GREETING1: &str = "Greeting 1";
 
     pub struct IntegrationTestContext<T> {
         pub worker: Worker<T>,
         pub stake_contract: Contract,
         pub rewards_contract: Contract,
+        pub user1: Account,
     }
 
     impl IntegrationTestContext<Sandbox> {
@@ -41,7 +44,7 @@ pub mod tests {
                 ))
                 .await?;
             let res = rewards_contract
-                .call("new")
+                .call("init")
                 .args_json((stake_contract.id(),))
                 .max_gas()
                 .transact()
@@ -49,10 +52,13 @@ pub mod tests {
             assert!(res.is_success());
             println!("Initialized the rewards contract!");
 
+            let user1 = worker.dev_create_account().await?;
+
             Ok(IntegrationTestContext {
                 worker,
                 stake_contract,
                 rewards_contract,
+                user1,
             })
         }
 
@@ -66,6 +72,46 @@ pub mod tests {
                 .view()
                 .await?
                 .json()
+        }
+
+        pub async fn set_greeting(&self) -> workspaces::Result<()> {
+            let res = self
+                .user1
+                .call(self.stake_contract.id(), "set_greeting")
+                .args_json((GREETING1,))
+                .gas(parse_gas!("1 T") as u64)
+                .transact()
+                .await?
+                .into_result()?;
+            println!("{:?}", res);
+
+            Ok(())
+        }
+
+        pub async fn set_greeting_as_view(&self) -> workspaces::Result<()> {
+            let res = self
+                .user1
+                .call(self.stake_contract.id(), "set_greeting")
+                .args_json((GREETING1,))
+                .gas(parse_gas!("1 T") as u64)
+                .view()
+                .await?;
+            println!("{:?}", res);
+
+            Ok(())
+        }
+
+        pub async fn cross_get_greeting(&self) -> workspaces::Result<String> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "query_greeting")
+                .max_gas()
+                .transact()
+                .await?;
+            if res.is_failure() {
+                println!("{:?}", res);
+            }
+            res.json()
         }
     }
 }
