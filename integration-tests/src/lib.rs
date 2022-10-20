@@ -33,4 +33,20 @@ mod tests {
         println!("Cross contract greet = \"{greet}\"");
         Ok(())
     }
+
+    #[tokio::test]
+    #[should_panic]
+    async fn test_fail_cross_get_greeting_as_view() {
+        let context = IntegrationTestContext::new().await.unwrap();
+        context.cross_get_greeting_as_view().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_cross_set_greeting() -> anyhow::Result<()> {
+        let context = IntegrationTestContext::new().await?;
+        context.cross_set_greeting().await?;
+        let greet = context.cross_get_greeting().await?;
+        assert_eq!(greet, GREETING1);
+        Ok(())
+    }
 }

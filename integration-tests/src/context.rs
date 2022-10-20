@@ -113,5 +113,29 @@ pub mod tests {
             }
             res.json()
         }
+
+        pub async fn cross_get_greeting_as_view(&self) -> workspaces::Result<String> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "query_greeting")
+                .max_gas()
+                .view()
+                .await;
+            println!("{:?}", res);
+            res?.json()
+        }
+
+        pub async fn cross_set_greeting(&self) -> workspaces::Result<()> {
+            let res = self
+                .user1
+                .call(self.rewards_contract.id(), "change_greeting")
+                .args_json((GREETING1,))
+                .max_gas()
+                .transact()
+                .await?
+                .into_result()?;
+            println!("{:?}", res);
+            Ok(())
+        }
     }
 }

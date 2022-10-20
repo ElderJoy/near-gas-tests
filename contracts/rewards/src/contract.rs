@@ -33,6 +33,22 @@ impl Contract {
         );
     }
 
+    // Public - query external greeting
+    pub fn query_greeting_complete(&self) -> Promise {
+        // Create a promise to call HelloNEAR.get_greeting()
+        let promise = hello_near::ext(self.hello_account.clone())
+            .with_static_gas(Gas(5 * TGAS))
+            .get_greeting();
+
+        let promise1 = promise.then(
+            // Create a promise to callback query_greeting_callback
+            Self::ext(env::current_account_id())
+                .with_static_gas(Gas(5 * TGAS))
+                .query_greeting_callback(),
+        );
+        promise1
+    }
+
     #[private] // Public - but only callable by env::current_account_id()
     pub fn query_greeting_callback(
         &self,
@@ -50,7 +66,7 @@ impl Contract {
     }
 
     // Public - change external greeting
-    pub fn change_greeting(&mut self, new_greeting: String) -> Promise {
+    pub fn change_greeting(&self, new_greeting: String) -> Promise {
         // Create a promise to call HelloNEAR.set_greeting(message:string)
         hello_near::ext(self.hello_account.clone())
             .with_static_gas(Gas(5 * TGAS))
@@ -65,7 +81,7 @@ impl Contract {
 
     #[private]
     pub fn change_greeting_callback(
-        &mut self,
+        &self,
         #[callback_result] call_result: Result<(), PromiseError>,
     ) -> bool {
         // Return whether or not the promise succeeded using the method outlined in external.rs
