@@ -1,68 +1,56 @@
 /*
- * Example smart contract written in RUST
+ * Mock for rewards smart contract
  *
- * Learn more about writing NEAR smart contracts with Rust:
- * https://near-docs.io/develop/Contract
+ * It should interact with staking contract getting user rewards
  *
  */
 
-use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{log, near_bindgen};
+use near_sdk::{
+    borsh::{self, BorshDeserialize, BorshSerialize},
+    json_types::{U128, U64},
+    near_bindgen,
+    serde::{Deserialize, Serialize},
+    AccountId, PanicOnDefault,
+};
 
-// Define the default message
-const DEFAULT_MESSAGE: &str = "Hello";
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct UserReward {
+    pub reward_epoch: U64,
+    pub user_veorder: U128,
+    pub total_veorder: U128,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct UserRewards {
+    pub rewards: Vec<UserReward>,
+}
 
 // Define the contract structure
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
-pub struct Contract {
-    message: String,
-}
-
-// Define the default, which automatically initializes the contract
-impl Default for Contract {
-    fn default() -> Self {
-        Self {
-            message: DEFAULT_MESSAGE.to_string(),
-        }
-    }
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
+pub struct Rewards {
+    stake: AccountId,
 }
 
 // Implement the contract structure
 #[near_bindgen]
-impl Contract {
+impl Rewards {
+    /// Initializes staking contract state.
+    #[init]
+    pub fn new(stake: AccountId) -> Self {
+        Self { stake }
+    }
+
     // Public method - returns the greeting saved, defaulting to DEFAULT_MESSAGE
-    pub fn get_greeting(&self) -> String {
-        return self.message.clone();
-    }
-
-    // Public method - accepts a greeting, such as "howdy", and records it
-    pub fn set_greeting(&mut self, message: String) {
-        // Use env::log to record logs permanently to the blockchain!
-        log!("Saving greeting {}", message);
-        self.message = message;
-    }
-}
-
-/*
- * The rest of this file holds the inline tests for the code above
- * Learn more about Rust tests: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
- */
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn get_default_greeting() {
-        let contract = Contract::default();
-        // this test did not call set_greeting so should return the default "Hello" greeting
-        assert_eq!(contract.get_greeting(), "Hello".to_string());
-    }
-
-    #[test]
-    fn set_then_get_greeting() {
-        let mut contract = Contract::default();
-        contract.set_greeting("howdy".to_string());
-        assert_eq!(contract.get_greeting(), "howdy".to_string());
+    pub fn get_rewards(&self) -> UserRewards {
+        return UserRewards {
+            rewards: vec![UserReward {
+                reward_epoch: U64::from(1),
+                user_veorder: U128::from(1),
+                total_veorder: U128::from(1),
+            }],
+        };
     }
 }
