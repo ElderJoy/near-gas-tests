@@ -31,4 +31,4 @@ yarn-debug.log*
 yarn-error.log*
 
 contract/target
-integration-tests/target
+target
