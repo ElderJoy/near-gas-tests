@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "(MIT AND Apache-2.0)",
   "scripts": {
+    "start": "cd frontend && npm run start",
     "deploy": "cd contracts/stake && ./deploy.sh",
     "build": "npm run build:stake && npm run build:rewards",
     "build:stake": "cd contracts/stake && ./build.sh",
@@ -10,7 +11,7 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "cd contracts/stake && cargo test",
     "test:integration": "cd integration-tests && cargo test",
-    "postinstall": "echo no frontend && echo rs tests && echo rs contracts/stake"
+    "postinstall": "cd frontend && npm install && cd .. && echo rs tests && echo rs contract"
   },
   "devDependencies": {
     "near-cli": "^3.3.0"
